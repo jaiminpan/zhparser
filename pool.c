@@ -111,7 +111,7 @@ void *pmalloc_z(pool_t p, int size)
 	return pmalloc_x(p, size, 0);
 }
 
-char *pstrdup(pool_t p, const char *src)
+char *pstrdup_s(pool_t p, const char *src)
 {
 	char *dst;
 	int len;
@@ -125,7 +125,7 @@ char *pstrdup(pool_t p, const char *src)
 	return dst;
 }
 
-char *pstrndup(pool_t p, const char *src, int len)
+char *pstrndup_s(pool_t p, const char *src, int len)
 {
 	char *dst;
 

@@ -43,8 +43,8 @@ void pool_free(pool_t p);						/* frees all the data on the pool & delete the po
 void *pmalloc(pool_t p, int size);				/* wrapper around malloc, takes from the pool */
 void *pmalloc_x(pool_t p, int size, char c);	/* wrapper around pmalloc which prefills buffer with c */
 void *pmalloc_z(pool_t p, int size);			/* wrapper around pmalloc, which prefills by zero */
-char *pstrdup(pool_t p, const char *s);			/* wrapper around strdup, gains the mem from the pool */
-char *pstrndup(pool_t p, const char *s, int l);
+char *pstrdup_s(pool_t p, const char *s);		/* wrapper around strdup, gains the mem from the pool */
+char *pstrndup_s(pool_t p, const char *s, int l);
 
 #ifdef __cplusplus
 }
