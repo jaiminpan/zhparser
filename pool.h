@@ -38,7 +38,7 @@ typedef struct
 }	pool_st, *pool_t;
 
 /* pool: api */
-pool_t pool_new();								/* create a new memory pool with an initial heap size */
+pool_t pool_new(void);							/* create a new memory pool with an initial heap size */
 void pool_free(pool_t p);						/* frees all the data on the pool & delete the pool itself */
 void *pmalloc(pool_t p, int size);				/* wrapper around malloc, takes from the pool */
 void *pmalloc_x(pool_t p, int size, char c);	/* wrapper around pmalloc which prefills buffer with c */

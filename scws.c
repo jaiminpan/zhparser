@@ -50,12 +50,12 @@ static const char *attr_nr = "nr";
 static const char *attr_na = "!";
 
 /* create scws engine */
-scws_t scws_new()
+scws_t scws_new(void)
 {
 	scws_t s;
 	s = (scws_t) malloc(sizeof(scws_st));
-    if (s == NULL)
-        return s;
+	if (s == NULL)
+		return s;
 	memset(s, 0, sizeof(scws_st));
 	s->mblen = charset_table_get(NULL);
 	s->off = s->len = 0;
@@ -346,9 +346,9 @@ static void _scws_ssegment(scws_t s, int end)
 	/* check special words (need strtoupper) */
 	if (wlen > 1)
 	{	
-		txt = (char *) _mem_ndup(s->txt + start, wlen);	
-		_str_toupper(txt, txt);
-		if (SCWS_IS_SPECIAL(txt, wlen))
+		txt = (unsigned char *) _mem_ndup((char *)s->txt + start, wlen);
+		_str_toupper((char *)txt, (char *)txt);
+		if (SCWS_IS_SPECIAL((char *)txt, wlen))
 		{
 			SCWS_PUT_RES(start, 9.5, wlen, "nz");
 			free(txt);
@@ -357,7 +357,7 @@ static void _scws_ssegment(scws_t s, int end)
 		free(txt);
 	}
 
-	txt = s->txt;	
+	txt = s->txt;
 	/* check brief words such as S.H.E M.R. */	
 	if (SCWS_IS_ALPHA(txt[start]) && txt[start+1] == '.')
 	{
@@ -749,7 +749,7 @@ if (j < 0 || SCWS_NO_RULE2(wmap[j][j]->flag))										\
 	break;
 
 #define	___ZRULE_CHECKER3___														\
-if (!scws_rule_check(s->r, r1, txt + zmap[j].start, zmap[j].end - zmap[j].start))	\
+if (!scws_rule_check(s->r, r1, (char *)txt + zmap[j].start, zmap[j].end - zmap[j].start))	\
 	break;
 
 static void _scws_msegment(scws_t s, int end, int zlen)
@@ -780,7 +780,7 @@ static void _scws_msegment(scws_t s, int end, int zlen)
 			while (start++ < end)
 			{
 				ch = txt[start];
-				if (start == end || SCWS_CHARLEN(txt[start]) > 1)
+				if (start == end || SCWS_CHARLEN(ch) > 1)
 					break;
 				clen++;
 			}
@@ -791,7 +791,7 @@ static void _scws_msegment(scws_t s, int end, int zlen)
 		}
 		else
 		{
-			query = xdict_query(s->d, txt + start, clen);
+			query = xdict_query(s->d, (char *)txt + start, clen);
 			wmap[i][i] = (word_t) pmalloc(p, sizeof(word_st));
 			if (query == NULL)
 			{
@@ -827,7 +827,7 @@ static void _scws_msegment(scws_t s, int end, int zlen)
 		k = 0;
 		for (j = i+1; j < zlen; j++)
 		{
-			query = xdict_query(s->d, txt + zmap[i].start, zmap[j].end - zmap[i].start);
+			query = xdict_query(s->d, (char *)txt + zmap[i].start, zmap[j].end - zmap[i].start);
 			if (query == NULL)
 				break;
 			ch = query->flag;
@@ -877,7 +877,7 @@ static void _scws_msegment(scws_t s, int end, int zlen)
 		if (SCWS_NO_RULE1(wmap[i][i]->flag))
 			continue;
 
-		r1 = scws_rule_get(s->r, txt + zmap[i].start, zmap[i].end - zmap[i].start);
+		r1 = scws_rule_get(s->r, (char *)txt + zmap[i].start, zmap[i].end - zmap[i].start);
 		if (r1 == NULL)
 			continue;
 
@@ -991,7 +991,7 @@ static void _scws_msegment(scws_t s, int end, int zlen)
 			continue;
 
 		k = i+1;
-		r1 = scws_rule_get(s->r, txt + zmap[i].start, zmap[k].end - zmap[i].start);
+		r1 = scws_rule_get(s->r, (char *)txt + zmap[i].start, zmap[k].end - zmap[i].start);
 		if (r1 == NULL)
 			continue;		
 
@@ -1372,7 +1372,7 @@ scws_top_t scws_get_tops(scws_t s, int limit, char *xattr)
 			/* check stopwords */
 			if (!strncmp(cur->attr, attr_en, 2) && cur->len > 6)
 			{
-				word = _mem_ndup(s->txt + cur->off, cur->len);
+				word = (char *) _mem_ndup((char *)s->txt + cur->off, cur->len);
 				_str_tolower(word, word);
 				if (SCWS_IS_NOSTATS(word, cur->len))
 				{
@@ -1383,13 +1383,13 @@ scws_top_t scws_get_tops(scws_t s, int limit, char *xattr)
 			}
 
 			/* put to the stats */
-			if (!(top = xtree_nget(xt, s->txt + cur->off, cur->len, NULL)))
+			if (!(top = xtree_nget(xt, (char *)s->txt + cur->off, cur->len, NULL)))
 			{
 				top = (scws_top_t) pmalloc_z(xt->p, sizeof(struct scws_topword));
 				top->weight = cur->idf;
 				top->times = 1;
 				strncpy(top->attr, cur->attr, 2);
-				xtree_nput(xt, top, sizeof(struct scws_topword), s->txt + cur->off, cur->len);
+				xtree_nput(xt, top, sizeof(struct scws_topword), (char *)s->txt + cur->off, cur->len);
 				cnt++;
 			}
 			else
@@ -1514,13 +1514,13 @@ scws_top_t scws_get_words(scws_t s, char *xattr)
 			}
 
 			/* put to the stats */
-			if (!(top = xtree_nget(xt, s->txt + cur->off, cur->len, NULL)))
+			if (!(top = xtree_nget(xt, (char *)s->txt + cur->off, cur->len, NULL)))
 			{
 				top = (scws_top_t) malloc(sizeof(struct scws_topword));
 				top->weight = cur->idf;
 				top->times = 1;
 				top->next = NULL;
-				top->word = (char *)_mem_ndup(s->txt + cur->off, cur->len);
+				top->word = (char *)_mem_ndup((char *)s->txt + cur->off, cur->len);
 				strncpy(top->attr, cur->attr, 2);
 				// add to the chain
 				if (tail == NULL)
@@ -1530,7 +1530,7 @@ scws_top_t scws_get_words(scws_t s, char *xattr)
 					tail->next = top;
 					tail = top;
 				}
-				xtree_nput(xt, top, sizeof(struct scws_topword), s->txt + cur->off, cur->len);
+				xtree_nput(xt, top, sizeof(struct scws_topword), (char *)s->txt + cur->off, cur->len);
 			}
 			else
 			{

@@ -38,8 +38,8 @@ rule_t scws_rule_new(const char *fpath, unsigned char *mblen)
 	rule_t r;
 	rule_item_t cr;
 	int i, j, rbl, aflag;
-	rule_attr_t a, rtail;
-	unsigned char buf[512], *str, *ptr, *qtr;
+	rule_attr_t a, rtail = NULL;
+	char buf[512], *str, *ptr, *qtr;
 
 	/* loaded or open file failed */
 	if ((fp = fopen(fpath, "r")) == NULL)
@@ -290,7 +290,8 @@ rule_t scws_rule_new(const char *fpath, unsigned char *mblen)
 		{
 			while (str < ptr)
 			{
-				j = mblen[(*str)];
+				int pos = (*str);
+				j = mblen[pos];
 
 #ifdef DEBUG
 				/* try to check repeat */
